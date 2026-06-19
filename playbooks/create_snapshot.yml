@@ -6,6 +6,8 @@
 
   vars:
     region: "{{ region | default(aws_region_default) }}"
+    snapshot_created_by: "AAP"
+    snapshot_purpose: "PreChangeBackup"
 
   tasks:
     - name: Validate required workflow artifacts
