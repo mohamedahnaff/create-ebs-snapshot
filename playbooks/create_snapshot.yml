@@ -1,0 +1,42 @@
+---
+- name: Create EBS snapshots for attached volumes
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    region: "{{ region | default(aws_region_default) }}"
+
+  tasks:
+    - name: Validate required workflow artifacts
+      ansible.builtin.fail:
+        msg: "Missing required workflow artifact: volume_ids"
+      when: volume_ids is not defined or volume_ids | length == 0
+
+    - name: Create snapshot for each volume
+      amazon.aws.ec2_snapshot:
+        region: "{{ region }}"
+        volume_id: "{{ item }}"
+        description: "CR {{ cr_number }} | Instance {{ instance_id }} | EBS snapshot"
+        wait: true
+        tags:
+          Name: "snap-{{ instance_id }}-{{ item }}"
+          CR_Number: "{{ cr_number }}"
+          env_name: "{{ env_name | default('unknown') }}"
+          CreatedBy: "{{ snapshot_created_by }}"
+          Purpose: "{{ snapshot_purpose }}"
+      loop: "{{ volume_ids }}"
+      register: snapshot_create
+
+    - name: Extract snapshot IDs
+      ansible.builtin.set_fact:
+        snapshot_ids: "{{ snapshot_create.results | map(attribute='snapshot_id') | list }}"
+
+    - name: Publish snapshot IDs for downstream workflow jobs
+      ansible.builtin.set_stats:
+        data:
+          snapshot_ids: "{{ snapshot_ids }}"
+
+    - name: Show snapshot IDs
+      ansible.builtin.debug:
+        var: snapshot_ids

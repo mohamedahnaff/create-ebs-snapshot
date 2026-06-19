@@ -1,0 +1,41 @@
+---
+- name: Update ServiceNow on snapshot failure
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    failure_message: "{{ failure_message | default('Snapshot workflow failed. Review AAP job output.') }}"
+
+  tasks:
+    - name: Validate ServiceNow sys_id availability
+      ansible.builtin.fail:
+        msg: "Missing servicenow_sys_id"
+      when: servicenow_sys_id is not defined or servicenow_sys_id | length == 0
+
+    - name: Update Change Request with failure details
+      ansible.builtin.uri:
+        url: "{{ snow_instance_url }}/api/now/table/change_request/{{ servicenow_sys_id }}"
+        method: PATCH
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: true
+        validate_certs: true
+        headers:
+          Accept: "application/json"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          work_notes: >-
+            EBS snapshot automation failed.
+            CR={{ cr_number }},
+            Instance={{ instance_id | default('N/A') }},
+            Region={{ region | default('N/A') }},
+            Error={{ failure_message }}
+          u_snapshot_status: "FAILED"
+        status_code: 200
+      register: snow_failure_update
+
+    - name: Show ServiceNow failure response
+      ansible.builtin.debug:
+        var: snow_failure_update.json

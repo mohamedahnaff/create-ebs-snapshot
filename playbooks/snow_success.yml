@@ -1,0 +1,39 @@
+---
+- name: Update ServiceNow on snapshot success
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Validate ServiceNow sys_id availability
+      ansible.builtin.fail:
+        msg: "Missing servicenow_sys_id"
+      when: servicenow_sys_id is not defined or servicenow_sys_id | length == 0
+
+    - name: Update Change Request with success details
+      ansible.builtin.uri:
+        url: "{{ snow_instance_url }}/api/now/table/change_request/{{ servicenow_sys_id }}"
+        method: PATCH
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: true
+        validate_certs: true
+        headers:
+          Accept: "application/json"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          work_notes: >-
+            EBS snapshot automation completed successfully.
+            CR={{ cr_number }},
+            Instance={{ instance_id }},
+            Region={{ region }},
+            Snapshot IDs={{ snapshot_ids | join(', ') }}
+          u_snapshot_status: "SUCCESS"
+          u_snapshot_ids: "{{ snapshot_ids | join(',') }}"
+        status_code: 200
+      register: snow_success_update
+
+    - name: Show ServiceNow success response
+      ansible.builtin.debug:
+        var: snow_success_update.json
