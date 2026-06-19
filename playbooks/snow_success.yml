@@ -5,10 +5,9 @@
   connection: local
 
   vars:
-    snow_instance_url: "https://YOUR_INSTANCE.service-now.com"
-    snow_username: "YOUR_USERNAME"
-    snow_password: "YOUR_PASSWORD"
-
+    snow_instance_url: "https://dev222810.service-now.com/"
+    snow_username: "admin"
+    snow_password: "p**XYDv2R5vx"
   tasks:
     - name: Validate ServiceNow sys_id availability
       ansible.builtin.fail:
