@@ -4,6 +4,11 @@
   gather_facts: false
   connection: local
 
+  vars:
+    snow_instance_url: "https://YOUR_INSTANCE.service-now.com"
+    snow_username: "YOUR_USERNAME"
+    snow_password: "YOUR_PASSWORD"
+
   tasks:
     - name: Validate ServiceNow sys_id availability
       ansible.builtin.fail:

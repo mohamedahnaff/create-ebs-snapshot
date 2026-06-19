@@ -5,6 +5,9 @@
   connection: local
 
   vars:
+    snow_instance_url: "https://dev222810.service-now.com/"
+    snow_username: "admin"
+    snow_password: "p**XYDv2R5vx"
     failure_message: "{{ failure_message | default('Snapshot workflow failed. Review AAP job output.') }}"
 
   tasks:
