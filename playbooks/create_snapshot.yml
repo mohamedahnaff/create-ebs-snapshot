@@ -21,10 +21,10 @@
         volume_id: "{{ item }}"
         description: "CR {{ cr_number }} | Instance {{ instance_id }} | EBS snapshot"
         wait: true
-        tags:
+        snapshot_tags:
           Name: "snap-{{ instance_id }}-{{ item }}"
           CR_Number: "{{ cr_number }}"
-          env_name: "{{ env_name | default('unknown') }}"
+          Environment: "{{ env_name | default('unknown') }}"
           CreatedBy: "{{ snapshot_created_by }}"
           Purpose: "{{ snapshot_purpose }}"
       loop: "{{ volume_ids }}"
