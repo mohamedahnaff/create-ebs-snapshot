@@ -5,15 +5,15 @@
   connection: local
 
   vars:
-    snow_instance_url: "https://dev222810.service-now.com"
-    snow_username: "admin"
-    snow_password: "p**XYDv2R5vx"
+    snow_instance_url: "https://YOUR_INSTANCE.service-now.com"
+    snow_username: "YOUR_USERNAME"
+    snow_password: "YOUR_PASSWORD"
     failure_message: "{{ failure_message | default('Snapshot workflow failed. Review AAP job output.') }}"
 
   tasks:
-    - name: Look up Change Request by CR number
+    - name: Look up RITM by number
       ansible.builtin.uri:
-        url: "{{ snow_instance_url | regex_replace('/+$', '') }}/api/now/table/change_request?sysparm_query=number={{ cr_number }}&sysparm_limit=1&sysparm_fields=sys_id,number"
+        url: "{{ snow_instance_url | regex_replace('/+$', '') }}/api/now/table/sc_req_item?sysparm_query=number={{ ritm_number }}&sysparm_limit=1&sysparm_fields=sys_id,number"
         method: GET
         user: "{{ snow_username }}"
         password: "{{ snow_password }}"
@@ -24,18 +24,18 @@
         status_code: 200
       register: snow_lookup
 
-    - name: Fail if Change Request is not found
+    - name: Fail if RITM is not found
       ansible.builtin.fail:
-        msg: "Change Request {{ cr_number }} not found in ServiceNow or access is restricted."
+        msg: "RITM {{ ritm_number }} not found in ServiceNow or access is restricted."
       when: snow_lookup.json.result | length == 0
 
     - name: Set resolved ServiceNow sys_id
       ansible.builtin.set_fact:
         resolved_sys_id: "{{ snow_lookup.json.result[0].sys_id }}"
 
-    - name: Update Change Request with failure details
+    - name: Update RITM with failure details
       ansible.builtin.uri:
-        url: "{{ snow_instance_url | regex_replace('/+$', '') }}/api/now/table/change_request/{{ resolved_sys_id }}"
+        url: "{{ snow_instance_url | regex_replace('/+$', '') }}/api/now/table/sc_req_item/{{ resolved_sys_id }}"
         method: PATCH
         user: "{{ snow_username }}"
         password: "{{ snow_password }}"
@@ -48,7 +48,7 @@
         body:
           work_notes: >-
             EBS snapshot automation failed.
-            CR={{ cr_number }},
+            RITM={{ ritm_number }},
             Instance={{ instance_id | default('N/A') }},
             Region={{ region | default('N/A') }},
             Error={{ failure_message }}

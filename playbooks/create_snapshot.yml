@@ -7,7 +7,7 @@
   vars:
     region: "{{ region | default(aws_region_default) }}"
     snapshot_created_by: "AAP"
-    snapshot_purpose: "PreChangeBackup"
+    snapshot_purpose: "ServiceRequestBackup"
 
   tasks:
     - name: Validate required workflow artifacts
@@ -19,11 +19,11 @@
       amazon.aws.ec2_snapshot:
         region: "{{ region }}"
         volume_id: "{{ item }}"
-        description: "CR {{ cr_number }} | Instance {{ instance_id }} | EBS snapshot"
+        description: "RITM {{ ritm_number }} | Instance {{ instance_id }} | EBS snapshot"
         wait: true
         snapshot_tags:
           Name: "snap-{{ instance_id }}-{{ item }}"
-          CR_Number: "{{ cr_number }}"
+          RITM_Number: "{{ ritm_number }}"
           Environment: "{{ env_name | default('unknown') }}"
           CreatedBy: "{{ snapshot_created_by }}"
           Purpose: "{{ snapshot_purpose }}"

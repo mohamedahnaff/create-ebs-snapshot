@@ -1,6 +1,5 @@
 ---
-- name: Precheck EC2 and collect attached EBS volumes
-  hosts: localhost
+- name: Precheck EC2 and collect attached EBS- name: Precheck EC2 and collect attached EBS volumes
   gather_facts: false
   connection: local
 
@@ -10,7 +9,7 @@
   tasks:
     - name: Validate mandatory inputs
       ansible.builtin.fail:
-        msg: "Missing mandatory input: instance_id or region"
+        msg: "Missing required input variables"
       when: >
         (instance_id is not defined or instance_id | length == 0) or
         (region is not defined or region | length == 0)
@@ -27,16 +26,7 @@
         msg: "EC2 instance {{ instance_id }} not found in region {{ region }}"
       when: ec2_info.instances | length == 0
 
-    - name: Capture EC2 state
-      ansible.builtin.set_fact:
-        ec2_state: "{{ ec2_info.instances[0].state.name }}"
-
-    - name: Fail if EC2 instance state is invalid
-      ansible.builtin.fail:
-        msg: "EC2 instance {{ instance_id }} is in invalid state: {{ ec2_state }}"
-      when: ec2_state not in ['running', 'stopped']
-
-    - name: Extract attached volume IDs
+    - name: Extract attached EBS volume IDs
       ansible.builtin.set_fact:
         volume_ids: >-
           {{
@@ -45,29 +35,12 @@
             | list
           }}
 
-    - name: Fail if no EBS volumes are attached
-      ansible.builtin.fail:
-        msg: "No EBS volumes attached to EC2 instance {{ instance_id }}"
-      when: volume_ids | length == 0
-
-    - name: Publish workflow artifacts for downstream jobs
+    - name: Publish workflow artifacts
       ansible.builtin.set_stats:
         data:
-          cr_number: "{{ cr_number }}"
-          servicenow_sys_id: "{{ servicenow_sys_id }}"
-          instance_id: "{{ instance_id }}"
-          region: "{{ region }}"
-          env_name: "{{ env_name | default('unknown') }}"
-          ec2_state: "{{ ec2_state }}"
           volume_ids: "{{ volume_ids }}"
 
-    - name: Show precheck results
+    - name: Show attached EBS volumes
       ansible.builtin.debug:
-        msg:
-          - "CR Number      : {{ cr_number }}"
-          - "ServiceNow SYS : {{ servicenow_sys_id }}"
-          - "EC2 Instance   : {{ instance_id }}"
-          - "Region         : {{ region }}"
-          - "Environment    : {{ env_name | default('unknown') }}"
-          - "EC2 State      : {{ ec2_state }}"
-          - "Volume IDs     : {{ volume_ids }}"
+        var: volume_ids
+
