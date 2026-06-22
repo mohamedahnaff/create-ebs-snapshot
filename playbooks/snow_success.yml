@@ -53,8 +53,7 @@
             Snapshot IDs={{ snapshot_ids | join(', ') }}
           u_snapshot_status: "SUCCESS"
           u_snapshot_ids: "{{ snapshot_ids | join(',') }}"
-          state: "REVIEW"
-        status_code: 200
+      status_code: 200
       register: snow_success_update
 
     - name: Show ServiceNow success response
