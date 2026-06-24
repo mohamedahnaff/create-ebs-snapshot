@@ -1,5 +1,5 @@
 ---
-- name: Precheck EC2 and collect attached EBS- name: Precheck EC2 and collect attached EBS volumes
+- name: Precheck EC2 and collect attached EBS volumes
   gather_facts: false
   connection: local
 
