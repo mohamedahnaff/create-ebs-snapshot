@@ -4,12 +4,6 @@
   gather_facts: false
   connection: local
 
-  vars:
-    snow_instance_url: "https://YOUR_INSTANCE.service-now.com"
-    snow_username: "YOUR_USERNAME"
-    snow_password: "YOUR_PASSWORD"
-    failure_message: "{{ failure_message | default('Snapshot workflow failed. Review AAP job output.') }}"
-
   tasks:
     - name: Look up RITM by number
       ansible.builtin.uri:
