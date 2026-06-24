@@ -1,5 +1,6 @@
 ---
 - name: Precheck EC2 and collect attached EBS volumes
+  hosts: localhost
   gather_facts: false
   connection: local
 
@@ -43,4 +44,3 @@
     - name: Show attached EBS volumes
       ansible.builtin.debug:
         var: volume_ids
-
